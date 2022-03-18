@@ -156,7 +156,7 @@ const CentralMonaco = ({ path, text, type }) => {
           <Run path={path}></Run>
         </TabPanel>
         <TabPanel value={value} index={1} style={{height:'25vh'}}>
-          <iframe src='http://localhost:2222/ssh/host/129.146.137.164' style={{bottom:'0px', left:'15vw', height:'23vh', width:'80vw'}}></iframe>
+          <iframe src='http://localhost:2222/ssh/host/localhost' style={{bottom:'0px', left:'15vw', height:'23vh', width:'80vw'}}></iframe>
         </TabPanel>
       </Box>
       
