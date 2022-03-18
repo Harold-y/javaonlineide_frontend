@@ -19,14 +19,30 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import FileList from '../components/FileList';
 import CustomizedTabs from '../components/CustomizedTabs';
 import CentralMonaco from '../components/CentralMonaco';
+import axios from 'axios';
+import { useEffect } from 'react';
+import { Modal, Fade, Backdrop } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { Link as LinkRoute } from 'react-router-dom'
 
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 600,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
+      <Link color="inherit" href="https://github.com/Harold-y">
+        Harold Ye
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -73,7 +89,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
         }),
         width: theme.spacing(7),
         [theme.breakpoints.up('sm')]: {
-          width: theme.spacing(9),
+          width: '0px',
         },
       }),
     },
@@ -83,13 +99,133 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const mdTheme = createTheme();
 
 function DashboardContent() {
+
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
+  const [operationStep, setOpStep] = React.useState(-1);
+  const [visibility, setVisibility] = React.useState(false);
+  const [tabList, setTabList] = React.useState([]);
+  const [editList, setEditList] = React.useState([]);
+  const [selectedEditPath, setSelectedPath] = React.useState('');
+  const [selectedEditText, setSelectedText] = React.useState('');
+  const [selectedEditType, setSelectedType] = React.useState('');
+
+
+  const handleTabClick = (path) => {
+    for (var i = 0; i < editList.length; i++) {
+      if (editList[i].path == path) {
+        setSelectedPath(path)
+        setSelectedText(editList[i].text)
+        setSelectedType(editList[i].type)
+        break;
+      }
+    }
+  }
+
+  const handleTabClose = (path) => {
+    setEditList(editList.filter((item) => item.path != path))
+    setTabList(tabList.filter((tab) => tab.path != path))
+    if (operationStep !== 0) {
+      setOpStep(operationStep - 1);
+    }
+    if (operationStep < 0 || operationStep >= editList.length) {
+      setOpStep(0);
+    }
+  }
+
+  const handleNewOpenClick = (path, name, type) => {
+    if (type === 'jpg' || type === 'jpeg' || type === 'png' || type === 'gif' || type === 'webp') {
+      handleImgModal(path, type);
+    } else {
+      var tabJson = {
+        path: path,
+        name: name,
+        type: type
+      }
+      var editJson = {
+        type: type,
+        path: path,
+        text: ''
+      }
+      var found = false;
+      for (var i = 0; i < tabList.length; i++) {
+        if (tabList[i].path == path) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        axios.get(`http://localhost:8888/fileOp/getContent`, { params: { path: path } }).then(function (response) {
+          editJson['text'] = response.data;
+          setTabList([...tabList, tabJson]);
+          setEditList([...editList, editJson]);
+        })
+      }
+    }
+  }
+
+  const handleNewValue = (newValue) => {
+    setOpStep(newValue)
+  }
+
+  useEffect(() => {
+    if (tabList.length === 0) {
+      setVisibility(false)
+    } else {
+      setVisibility(true)
+    }
+  }, [tabList])
+
+  useEffect(() => {
+    if (operationStep === 0 && tabList.length >= 1) {
+      setSelectedPath(editList[0].path)
+      setSelectedText(editList[0].text)
+      setSelectedType(editList[0].type)
+    }
+    if (tabList.length === 1) {
+      setSelectedPath(editList[0].path)
+      setSelectedText(editList[0].text)
+      setSelectedType(editList[0].type)
+    } else if (operationStep >= 1) {
+      setSelectedPath(editList[operationStep].path)
+      setSelectedText(editList[operationStep].text)
+      setSelectedType(editList[operationStep].type)
+    }
+  }, [operationStep, editList])
+
+
+  const [imgOpen, setImgOpen] = React.useState(false)
+  const [imgBase, setImgBase] = React.useState('')
+  const handleImgModal = (path, type) => {
+    axios.get(`http://localhost:8888/fileOp/getImageBase64`, { params: { path: path } }).then(function (response) {
+      setImgBase('data:image/' + type + ';base64, ' + response.data);
+    })
+    setImgOpen(!imgOpen);
+  };
+
+
 
   return (
     <ThemeProvider theme={mdTheme}>
+      <Modal
+        open={imgOpen}
+        onClose={handleImgModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={imgOpen}>
+          <Box sx={style}>
+            <img src={imgBase} style={{ height: '30vh' }}></img>
+          </Box>
+        </Fade>
+      </Modal>
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
         <AppBar position="absolute" open={open}>
@@ -118,14 +254,17 @@ function DashboardContent() {
               sx={{ flexGrow: 1 }}
             >
               Dashboard
-              
+
             </Typography>
-            <Divider orientation="vertical" flexItem />
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+            Exit Current Project
+            <LinkRoute to='/'>
+              <IconButton color="inherit">
+                <Badge badgeContent={0} color="secondary">
+                  <LogoutIcon />
+                </Badge>
+              </IconButton>
+            </LinkRoute>
+
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -142,7 +281,7 @@ function DashboardContent() {
             </IconButton>
           </Toolbar>
           <Divider />
-          <FileList></FileList>
+          <FileList handleNewOpenClick={handleNewOpenClick}></FileList>
         </Drawer>
         <Box
           component="main"
@@ -158,15 +297,15 @@ function DashboardContent() {
         >
           <Toolbar >
           </Toolbar>
-          <Container maxWidth="false" style = {{position:'fixed'}}>
-            <CustomizedTabs></CustomizedTabs>
+          <Container maxWidth="false" style={{ position: 'fixed' }}>
+            <CustomizedTabs value={operationStep} tabs={tabList} handleClick={handleTabClick} handleClose={handleTabClose} handleNewValue={handleNewValue}></CustomizedTabs>
           </Container>
-          
+
           <Container maxWidth="false" sx={{ mt: 4, mb: 4 }} style={{}}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <CentralMonaco path="C:\Users\Harold Y\IdeaProjects\wd\src\entity\Information.java"/>
+                  {visibility ? <CentralMonaco path={selectedEditPath} type={selectedEditType} text={selectedEditText} /> : ''}
                 </Paper>
               </Grid>
             </Grid>

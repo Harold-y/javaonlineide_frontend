@@ -32,7 +32,7 @@ const styleItem = {
     paddingBottom:'8px',
 }
 
-const FileList = () => {
+const FileList = ({handleNewOpenClick}) => {
     const addFile = (project) =>
     {
         project.sort(function(a, b) {
@@ -59,9 +59,9 @@ const FileList = () => {
                 if(file.type === "folder")
                 {
                     return (<Folder fileName = {file.fileName} path = {file.path} folderContainer = {file.folderContainer}
-                     numChildren = {file.numChildren} parent = {path} key = {file.path}></Folder>)
+                     numChildren = {file.numChildren} parent = {path} key = {file.path} handleNewOpenClick={handleNewOpenClick}></Folder>)
                 }else {
-                    return (<File fileName = {file.fileName} path = {file.path} type = {file.type} parent = {path} key = {file.path}></File>)
+                    return (<File fileName = {file.fileName} path = {file.path} type = {file.type} parent = {path} key = {file.path} handleNewOpenClick={handleNewOpenClick}></File>)
                 }
             })}</List>
         </List>)

@@ -32,6 +32,7 @@ import { Button } from '@mui/material'
 import qs from 'qs'
 import MuiAlert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
+import Tooltip from '@mui/material/Tooltip';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -122,6 +123,8 @@ const File = (props) => {
     }
   }
 
+
+
   const [hover, setHover] = useState(false);
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -157,34 +160,30 @@ const File = (props) => {
   const [invisibility, setInvisibility] = React.useState(false);
 
   const deleteFile = () => {
-    axios.delete(`http://localhost:8888/fileOp/deleteFile`, {params:{path:path}}).then(function(response)
-        {
-            if(response.data === true)
-            {
-                setInvisibility(true);
-                setOpenAlert(true);
-            }
-        })
-}
+    axios.delete(`http://localhost:8888/fileOp/deleteFile`, { params: { path: path } }).then(function (response) {
+      if (response.data === true) {
+        setInvisibility(true);
+        setOpenAlert(true);
+      }
+    })
+  }
 
-const editFileName = () => {
-  axios.post(`http://localhost:8888/fileOp/renameFile`, qs.stringify({
-            path:parent + "/" + name,
-            newName:editText
-        })).then(function(response)
-            {
-                if(response.data === true)
-                {
-                    setName(editText);
-                    getIcon();
-                    setOpenAlert(true);
-                }
-            })
+  const editFileName = () => {
+    axios.post(`http://localhost:8888/fileOp/renameFile`, qs.stringify({
+      path: parent + "/" + name,
+      newName: editText
+    })).then(function (response) {
+      if (response.data === true) {
+        setName(editText);
+        getIcon();
+        setOpenAlert(true);
+      }
+    })
     setEditText("")
     setEditOpen(false)
-}
+  }
 
-const [openAlert, setOpenAlert] = React.useState(false);
+  const [openAlert, setOpenAlert] = React.useState(false);
 
   const handleCloseAlert = (event, reason) => {
     if (reason === 'clickaway') {
@@ -193,102 +192,112 @@ const [openAlert, setOpenAlert] = React.useState(false);
     setOpenAlert(false);
   };
 
+  const handleNameTooLong = () => {
+    if (name.length > 22)
+      return name.substring(0, 21) + '...';
+    return name;
+  }
+
   return (
     <>
-    {!invisibility ? <>
-      <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleCloseAlert}>
-        <Alert onClose={handleCloseAlert} severity="success" sx={{ width: '100%' }}>
-          Success !
-        </Alert>
-      </Snackbar>
-      <Modal
-        open={editOpen}
-        onClose={handleEditModal}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-      >
-        <Fade in={editOpen}>
-          <Box sx={style}>
-            <Typography id="modal-modal-title" variant="h6" component="h2" style={{ marginBottom: "20px" }}>
-              Edit File Name
-            </Typography>
-            <form style={{ float: 'left' }}>
-              <TextField id="outlined-basic" label="Name" variant="outlined"
-                value={editText} onChange={(e) => setEditText(e.target.value)} />
-              <Button variant="outlined" style={{ marginLeft: '50px', padding: '15px' }} onClick={() => {editFileName()}}>Confirm</Button>
-              <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
-              <Typography variant="body2" gutterBottom >
-                {wisdom} —— {wisdomOrg}
+
+      {!invisibility ? <>
+        <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleCloseAlert}>
+          <Alert onClose={handleCloseAlert} severity="success" sx={{ width: '100%' }}>
+            Success !
+          </Alert>
+        </Snackbar>
+        <Modal
+          open={editOpen}
+          onClose={handleEditModal}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+          }}
+        >
+          <Fade in={editOpen}>
+            <Box sx={style}>
+              <Typography id="modal-modal-title" variant="h6" component="h2" style={{ marginBottom: "20px" }}>
+                Edit File Name
               </Typography>
-            </form>
-          </Box>
-        </Fade>
-      </Modal>
-      <ListItem style={{ ...styleItem, ...styleBlock, ...(hovered ? styleHovered : null) }}
-        onMouseEnter={() => {
-          setHovered(true);
-        }}
-        onMouseLeave={() => {
-          setHovered(false);
-        }}
-        secondaryAction={
-          <>
-            <IconButton edge="end" aria-label="more">
-              <MoreHorizIcon onClick={handleClick} style={{ height: '20px', width: '20px' }} />
-            </IconButton>
-            <IconButton edge="end" aria-label="new">
-              <OpenInNewIcon onClick={() => { }} style={{ height: '20px', width: '20px' }} />
-            </IconButton>
-            <Popover
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-              onClose={handleClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
+              <form style={{ float: 'left' }}>
+                <TextField id="outlined-basic" label="Name" variant="outlined"
+                  value={editText} onChange={(e) => setEditText(e.target.value)} />
+                <Button variant="outlined" style={{ marginLeft: '50px', padding: '15px' }} onClick={() => { editFileName() }}>Confirm</Button>
+                <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
+                <Typography variant="body2" gutterBottom >
+                  {wisdom} —— {wisdomOrg}
+                </Typography>
+              </form>
+            </Box>
+          </Fade>
+        </Modal>
+        <Tooltip title={name}>
+          <ListItem style={{ ...styleItem, ...styleBlock, ...(hovered ? styleHovered : null) }}
+            onMouseEnter={() => {
+              setHovered(true);
+            }}
+            onMouseLeave={() => {
+              setHovered(false);
+            }}
+            secondaryAction={
+              <>
+                <IconButton edge="end" aria-label="more">
+                  <MoreHorizIcon onClick={handleClick} style={{ height: '20px', width: '20px' }} />
+                </IconButton>
+                <IconButton edge="end" aria-label="new">
+                  <OpenInNewIcon onClick={() => { props.handleNewOpenClick(path, name, type) }} style={{ height: '20px', width: '20px' }} />
+                </IconButton>
+                <Popover
+                  id={id}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  }}
 
-            >
-              <List>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => { getWisdom(); setEditText(name); setEditOpen(true); }}>
-                    <ListItemIcon>
-                      <DriveFileRenameOutlineIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Edit File Name" />
-                  </ListItemButton>
-                </ListItem>
-                <Divider />
-                <ListItem disablePadding >
-                  <ListItemButton onClick={deleteFile}>
-                    <ListItemIcon>
-                      <DeleteIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Delete File" />
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            </Popover>
-          </>
+                >
+                  <List>
+                    <ListItem disablePadding>
+                      <ListItemButton onClick={() => { getWisdom(); setEditText(name); setEditOpen(true); }}>
+                        <ListItemIcon>
+                          <DriveFileRenameOutlineIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Edit File Name" />
+                      </ListItemButton>
+                    </ListItem>
+                    <Divider />
+                    <ListItem disablePadding >
+                      <ListItemButton onClick={deleteFile}>
+                        <ListItemIcon>
+                          <DeleteIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Delete File" />
+                      </ListItemButton>
+                    </ListItem>
+                  </List>
+                </Popover>
+              </>
 
-        }
-      >
-        <ListItemAvatar>
-          <Avatar style={styleAvatar}>
-            {getIcon()}
+            }
+          >
+            <ListItemAvatar>
+              <Avatar style={styleAvatar}>
+                {getIcon()}
 
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText primary={name} style={{ marginLeft: '-15px' }} />
-      </ListItem>
-    </> : ''}
-      
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary={handleNameTooLong()} style={{ marginLeft: '-15px' }} />
+          </ListItem>
+        </Tooltip>
+
+      </> : ''}
+
     </>
 
   )

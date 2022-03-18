@@ -2,12 +2,13 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Tabs, { tabsClasses } from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import { IconButton } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 
-export default function CustomizedTabs() {
-  const [value, setValue] = React.useState(0);
+export default function CustomizedTabs({ value, tabs, handleClick, handleClose, handleNewValue }) {
 
   const handleChange = (event, newValue) => {
-    setValue(newValue);
+    handleNewValue(newValue);
   };
 
   return (
@@ -17,7 +18,7 @@ export default function CustomizedTabs() {
         maxWidth: { xs: "70vw", sm: "70vw" },
         bgcolor: 'background.paper',
       }}
-      style = {{position:'relative'}}
+      style={{ position: 'relative' }}
     >
       <Tabs
         value={value}
@@ -31,27 +32,18 @@ export default function CustomizedTabs() {
           },
         }}
       >
-        <Tab label="Item One" />
-        <Tab label="Item Two" />
-        <Tab label="Item Three" />
-        <Tab label="Item Four" />
-        <Tab label="Item Five" />
-        <Tab label="Item Six" />
-        <Tab label="Item Seven" />
-        <Tab label="Item One" />
-        <Tab label="Item Two" />
-        <Tab label="Item Three" />
-        <Tab label="Item Four" />
-        <Tab label="Item Five" />
-        <Tab label="Item Six" />
-        <Tab label="Item Seven" />
-        <Tab label="Item One" />
-        <Tab label="Item Two" />
-        <Tab label="Item Three" />
-        <Tab label="Item Four" />
-        <Tab label="Item Five" />
-        <Tab label="Item Six" />
-        <Tab label="Item Seven" />
+        {
+          tabs.map((tab) => (
+            <Tab label={
+              <span>
+                {tab.name}
+                <IconButton aria-label="delete" onClick={() => { handleClose(tab.path) }}>
+                  <ClearIcon />
+                </IconButton>
+              </span>
+            } key={tab.path} onClick={() => { handleClick(tab.path) }}></Tab>
+          ))
+        }
       </Tabs>
     </Box>
   );

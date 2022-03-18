@@ -394,9 +394,9 @@ const Folder = (props) => {
                 if(file.type === "folder")
                 {
                     return (<Folder fileName = {file.fileName} path = {file.path} folderContainer = {file.folderContainer}
-                    numChildren = {file.numChildren} key = {file.path} parent = { path }></Folder>)
+                    numChildren = {file.numChildren} key = {file.path} parent = { path } handleNewOpenClick={props.handleNewOpenClick}></Folder>)
                 }else {
-                    return (<File fileName = {file.fileName} path = {file.path} type = {file.type} key = {file.path} parent = {path}></File>)
+                    return (<File fileName = {file.fileName} path = {file.path} type = {file.type} key = {file.path} parent = {path} handleNewOpenClick={props.handleNewOpenClick}></File>)
                 }
             })
         }</List> : ''}
